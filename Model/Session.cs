@@ -4,14 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace NetSetDom.Model
 {
     public class Session
     {
         private const string FILENAME = "session.xml";
-        private static string _applicationDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        private static string _applicationPath = Path.Combine(_applicationDataPath, "NetSetDom");
+        private readonly static string _applicationDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private readonly static string _applicationPath = Path.Combine(_applicationDataPath, "NetSetDom");
         /// <summary>
         /// Emplacement du fichier session.xml dans le répertoire AppData de l'utilisateur
         /// </summary>
@@ -21,7 +22,17 @@ namespace NetSetDom.Model
         /// </summary>
         public int ActiveIndex { get; set; } = 0;
 
-        public Session() { }
+        public Session()
+        {
+            ConfigureAutoSave();
+        }
 
+        private void ConfigureAutoSave()
+        {
+            Application.ApplicationExit += (sender, e) =>
+            {
+                //IOFiles.saveCurrentSession();
+            };
+        }
     }
 }

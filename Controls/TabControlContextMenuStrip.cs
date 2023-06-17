@@ -9,22 +9,22 @@ namespace NetSetDom.Controls
 {
     public class TabControlContextMenuStrip : ContextMenuStrip
     {
-        private TabControl _tabControl;
+        private readonly MainTabControl _tabControl;
         private const string NAME = "TabControlContextMenuStrip";
-        public TabControlContextMenuStrip(TabControl tabControl)
+        public TabControlContextMenuStrip(MainTabControl tabControl)
         {
             Name = NAME;
             _tabControl = tabControl;
 
-            var renameTab = new ToolStripMenuItem("Renommer");
+            //var renameTab = new ToolStripMenuItem("Renommer");
             var resetTab = new ToolStripMenuItem("Tout Effacer");
 
-            renameTab.Click += (s, e) =>
+            /*renameTab.Click += (s, e) =>
             {
-                _tabControl.SelectedTab.BorderStyle = BorderStyle.Fixed3D;
-               
+                DialogResult result = MessageBox.Show();
+               _tabControl.SelectedTab.Text 
 
-            };
+            };*/
 
             resetTab.Click += (s, e) => 
             {
@@ -32,7 +32,9 @@ namespace NetSetDom.Controls
                 if (dialogResult == DialogResult.Yes)
                 {
                     //reset all components
-                    //_tabControl.SelectedTab.
+                    var tabPage = _tabControl.SelectedTab;
+                    TabPanel tab = (TabPanel) tabPage.Controls[0];
+                    tab.Reset();
                 }
                 else if (dialogResult == DialogResult.No)
                 {
@@ -40,7 +42,7 @@ namespace NetSetDom.Controls
                 }
             };
 
-            Items.AddRange(new ToolStripItem[] { renameTab, resetTab });
+            Items.AddRange(new ToolStripItem[] { resetTab });
         }
     }
 }

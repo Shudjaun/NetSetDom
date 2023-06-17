@@ -11,7 +11,7 @@ namespace NetSetDom.Controls
     public class MainTabControl : TabControl
     {
         private const string NAME = "MainTabControl";
-        private ContextMenuStrip _contextMenuStrip;
+        private readonly ContextMenuStrip _contextMenuStrip;
         public MainTabControl()
         {
             Name = NAME;

@@ -24,6 +24,11 @@ namespace NetSetDom.Controls
             var fileDropDownMenu = new ToolStripMenuItem("Fichier");
             var exitMenu = new ToolStripMenuItem("Quitter", null, null, Keys.Control | Keys.Q);
 
+            exitMenu.Click += (s, e) => 
+            {
+                Application.Exit();
+            };
+
             fileDropDownMenu.DropDownItems.Add(exitMenu);
 
             Items.Add(fileDropDownMenu);

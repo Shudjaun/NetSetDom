@@ -35,7 +35,9 @@ namespace NetSetDom.Controls
             MaskedTextBox mtbIp = new MaskedTextBox();
             MaskedTextBox mtbSubnet = new MaskedTextBox();
             MaskedTextBox mtbGateway = new MaskedTextBox();
-            MaskedTextBox[] mtbs = new MaskedTextBox[] { mtbIp, mtbSubnet, mtbGateway };
+            MaskedTextBox mtbDNS1 = new MaskedTextBox();
+            MaskedTextBox mtbDNS2 = new MaskedTextBox();
+            MaskedTextBox[] mtbs = new MaskedTextBox[] { mtbIp, mtbSubnet, mtbGateway, mtbDNS1, mtbDNS2 };
             foreach (var tbs in mtbs)
             {
                 tbs.Culture = new CultureInfo("en-EN"); // To display correctly . and not , for non english users
@@ -52,6 +54,8 @@ namespace NetSetDom.Controls
             mtbIp.Location = new Point(80, 50);
             mtbSubnet.Location = new Point(80, 80);
             mtbGateway.Location = new Point(80, 110);
+            mtbDNS1.Location = new Point(80, 140);
+            mtbDNS2.Location = new Point(80, 170);
 
             Controls.AddRange(mtbs);
         }

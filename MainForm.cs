@@ -1,12 +1,6 @@
 ﻿using NetSetDom.Controls;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NetSetDom.Model;
+using System.Net.NetworkInformation;
 using System.Windows.Forms;
 
 namespace NetSetDom
@@ -17,6 +11,9 @@ namespace NetSetDom
         public MainForm()
         {
             InitializeComponent();
+
+            NetworkInterface[] ifs =  IONetwork.GetInterfaces();
+
             var menuStrip = new MainMenuStrip();
             mainTabControl = new MainTabControl();
             //var panel = new TabPanel();
@@ -30,7 +27,7 @@ namespace NetSetDom
             var onglets = new TabPage[] { onglet1, onglet2, onglet3, onglet4, onglet5, onglet6 };
             foreach ( var onglet in onglets )
             {
-                onglet.Controls.Add(new TabPanel());
+                onglet.Controls.Add(new TabPanel(ifs));
             }
 
             mainTabControl.Alignment = TabAlignment.Top;
@@ -40,5 +37,6 @@ namespace NetSetDom
 
             Controls.AddRange(new Control[] { mainTabControl, menuStrip });
         }
+        
     }
 }

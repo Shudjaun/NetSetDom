@@ -1,12 +1,14 @@
 ﻿using NetSetDom.Model;
 using NetSetDom.utils;
 using System;
+using System.CodeDom;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace NetSetDom.Controls
@@ -19,7 +21,7 @@ namespace NetSetDom.Controls
         private const string NAME = "TAB_PANEL";
         private readonly int _topAnchor = 20;
         private readonly NetworkInterface[] _networkInterface;
-        private MaskedTextBox[] _mtbs;
+        private TextBox[] _TextBoxs;
         private Label[] _labelsD;
 
         /// <summary>
@@ -48,7 +50,7 @@ namespace NetSetDom.Controls
         /// </summary>
         public void Reset()
         {
-            foreach (var mtb in _mtbs)
+            foreach (var mtb in _TextBoxs)
             {
                 mtb.Clear();
             }
@@ -125,6 +127,7 @@ namespace NetSetDom.Controls
         }
         /// <summary>
         /// Initialise les champs de saisie
+        /// Crée les évenements
         /// </summary>
         private void InitBoxs()
         {
@@ -135,102 +138,105 @@ namespace NetSetDom.Controls
             }
             interfacesBox.SelectedValueChanged += (s, e) =>
             {
-                Console.WriteLine("Sélectionné: "+interfacesBox.Text);
+                //Console.WriteLine("Sélectionné: "+interfacesBox.Text);
                 ResetLabels();
                 PopulateLabels(IONetwork.GetInterfaceByName(interfacesBox.Text));
             };
             
             TextBox AliasBox = new TextBox();
             CheckBox chkDHCP = new CheckBox();
-            MaskedTextBox mtbIp = new MaskedTextBox();
-            MaskedTextBox mtbSubnet = new MaskedTextBox();
-            MaskedTextBox mtbGateway = new MaskedTextBox();
+            TextBox mtbIp = new TextBox();
+            TextBox mtbSubnet = new TextBox();
+            TextBox mtbGateway = new TextBox();
             CheckBox chkDNS = new CheckBox();
-            MaskedTextBox mtbDNS1 = new MaskedTextBox();
-            MaskedTextBox mtbDNS2 = new MaskedTextBox();
-            _mtbs = new MaskedTextBox[] { mtbIp, mtbSubnet, mtbGateway, mtbDNS1, mtbDNS2 };
-            foreach (var tbs in _mtbs)
+            TextBox mtbDNS1 = new TextBox();
+            TextBox mtbDNS2 = new TextBox();
+            _TextBoxs = new TextBox[] { mtbIp, mtbSubnet, mtbGateway, mtbDNS1, mtbDNS2 };
+            foreach (var textBox in _TextBoxs)
             {
+                Regex iPv4Regex = new Regex("^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+                //Regex ipv6Regex = new Regex("^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$");
+
                 ToolTip toolTip = new ToolTip();
-                tbs.Culture = new CultureInfo("en-EN"); // To display correctly (.) and not (,) for non english users
-                tbs.Mask = "###.###.###.###"; // Accept only numeric caracters
 
-                tbs.ValidatingType = typeof(System.Net.IPAddress);
-
-                tbs.MaskInputRejected += new MaskInputRejectedEventHandler(RejectedHandler);
-                tbs.TypeValidationCompleted += new TypeValidationEventHandler(maskedTextBox1_TypeValidationCompleted);
-                tbs.KeyDown += new KeyEventHandler(maskedTextBox1_KeyDown);
-
-                tbs.Size = new Size(120, 30);
-                tbs.Click += (s, e) =>
+                textBox.Size = new Size(120, 30);
+                /*textBox.Click += (s, e) =>
                 {
                     //tbs.SelectAll();
-                    tbs.Select(0, 0); // Put the cursor at the beginning ot the MaskedTextBox
+                    textBox.Select(0, 0); // Put the cursor at the beginning ot the TextBox
+                };*/
+                textBox.GotFocus += (s, e) =>
+                {
+                    if (textBox.Equals(mtbSubnet) && mtbIp.Text.Length >= 7)
+                    {
+                        textBox.Text = "255.255.255.0";
+                    }
                 };
-                
-                void RejectedHandler(object sender, MaskInputRejectedEventArgs e)
+                textBox.LostFocus += (s, e) =>
                 {
-                    
-                    if (tbs.MaskFull)
+                    if ( !textBox.Equals(mtbSubnet) && iPv4Regex.IsMatch(textBox.Text))
                     {
-                        toolTip.ToolTipTitle = "Champ plein";
-                        toolTip.Show("Vous ne pouvez pas insérer plus de données.", tbs, 0, 20, 2000);
-                    }
-                    else if (e.Position == tbs.Mask.Length)
+                        textBox.BackColor = Color.Green;
+                    } else if ( Subnets.GetSubnets().Contains(textBox.Text) )
                     {
-                        toolTip.ToolTipTitle = "Fin du champ";
-                        toolTip.Show("Vous ne pouvez pas insérer plus de données à cette position", tbs, 0, 20, 2000);
+                        textBox.BackColor = Color.Green;
                     }
                     else
                     {
-                        toolTip.ToolTipTitle = "Entrée incorrecte";
-                        toolTip.Show("le caractère inséré est incorrect", tbs, 0, 20, 2000);
+                        textBox.BackColor = Color.Red;
                     }
-                }
-                void maskedTextBox1_TypeValidationCompleted(object sender, TypeValidationEventArgs e)
-                {
-                    if (!e.IsValidInput)
-                    {
-                        toolTip.ToolTipTitle = "non valide";
-                        toolTip.Show("Doit être au format ###.###.###.###", tbs, 0, 20, 2000);
-                        tbs.BackColor = Color.Crimson;
-                    }
-                    else
-                    {
-                        // TODO timer pour repasser blanc
-                        tbs.BackColor = Color.Green;
-                    }
-                    if (tbs.Equals(mtbSubnet))
-                    {
-                        //Subnet specific rules
-                        string userInput = e.ReturnValue.ToString();
+                };
 
-                        if (!Subnets.GetSubnets().Contains(userInput))
-                        {
-                            toolTip.ToolTipTitle = "Masque invalide";
-                            toolTip.Show("Vérifiez la saisie du masque de sous-réseau", tbs, 0, 20, 2000);
-                            tbs.BackColor = Color.MediumVioletRed;
-                            e.Cancel = true;
-                        }
-                    }
-                }
-
-                // Hide the tooltip if the user starts typing again before the five-second display limit on the tooltip expires.
-                void maskedTextBox1_KeyDown(object sender, KeyEventArgs e)
-                {
-                    toolTip.Hide(tbs);
-                }
             }
+
+            chkDHCP.CheckedChanged += (s, e) =>
+            {
+                mtbIp.BackColor = Color.White;
+                mtbSubnet.BackColor = Color.White;
+                mtbGateway.BackColor = Color.White;
+                if (chkDHCP.Checked)
+                {
+                    mtbIp.Text = "";
+                    mtbSubnet.Text = "";
+                    mtbGateway.Text = "";
+                    mtbIp.Enabled = false;
+                    mtbSubnet.Enabled = false;
+                    mtbGateway.Enabled = false;
+                } else
+                {
+                    mtbIp.Enabled = true;
+                    mtbSubnet.Enabled = true;
+                    mtbGateway.Enabled = true;
+                }
+            };
+            chkDNS.CheckedChanged += (s, e) =>
+            {
+                mtbDNS1.BackColor = Color.White;
+                mtbDNS2.BackColor = Color.White;
+                if ( chkDNS.Checked)
+                {
+                    mtbDNS1.Text = "";
+                    mtbDNS2.Text = "";
+                    mtbDNS1.Enabled = false;
+                    mtbDNS2.Enabled = false;
+                } else
+                {
+                    mtbDNS1.Enabled = true;
+                    mtbDNS2.Enabled = true;
+                }
+                
+            };
+
             int y = _topAnchor;
             interfacesBox.Location = new Point(130, y);
             y += 30;
             chkDHCP.Location = new Point(130, y);
             interfacesBox.Size = new Size(120, 30);
             AliasBox.Size = new Size(120, 30);
-            for (int i = 0; i < _mtbs.Length; i++)
+            for (int i = 0; i < _TextBoxs.Length; i++)
             {
                 y += 30;
-                _mtbs[i].Location = new Point(130, y);
+                _TextBoxs[i].Location = new Point(130, y);
             }
             
             chkDNS.Location = new Point(130, y + 30);
@@ -238,7 +244,7 @@ namespace NetSetDom.Controls
 
             Controls.Add(interfacesBox);
             Controls.Add(chkDHCP);
-            Controls.AddRange(_mtbs);
+            Controls.AddRange(_TextBoxs);
             Controls.Add(chkDNS);
             Controls.Add(AliasBox);
         }

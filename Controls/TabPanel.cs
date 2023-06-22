@@ -1,14 +1,7 @@
 ﻿using NetSetDom.Model;
 using NetSetDom.utils;
-using System;
-using System.CodeDom;
 using System.Drawing;
-using System.Globalization;
-using System.Linq;
-using System.Net;
 using System.Net.NetworkInformation;
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace NetSetDom.Controls
@@ -21,8 +14,17 @@ namespace NetSetDom.Controls
         private const string NAME = "TAB_PANEL";
         private readonly int _topAnchor = 20;
         private readonly NetworkInterface[] _networkInterface;
+        private TextBox _aliasBox;
+        private TextBox _mtbIp;
+        private TextBox _mtbSubnet;
+        private TextBox _mtbGateway;
+        private TextBox _mtbDNS1;
+        private TextBox _mtbDNS2;
         private TextBox[] _TextBoxs;
         private Label[] _labelsD;
+        private CheckBox _chkDHCP;
+        private CheckBox _chkDNS;
+        private ComboBox _interfacesBox;
 
         /// <summary>
         /// Instancie un nouveau conteneur principal pour l'onglet
@@ -31,7 +33,7 @@ namespace NetSetDom.Controls
         {
         }
         /// <summary>
-        /// Instancie un nouveau conteneur pricipal pour l'ongler<br>
+        /// Instancie un nouveau conteneur pricipal pour l'onglet<br>
         /// La liste des interfaces est passé en paramètre</br>
         /// </summary>
         /// <param name="interfaces"></param>
@@ -75,6 +77,14 @@ namespace NetSetDom.Controls
         {
             InitBoxs();
             InitLabels();
+            InitValiderButton();
+        }
+        /// <summary>
+        /// Save Configurations in a xml file
+        /// </summary>
+        private void SaveConfigurations()
+        {
+            // TODO
         }
 
         private void InitLabels()
@@ -131,31 +141,30 @@ namespace NetSetDom.Controls
         /// </summary>
         private void InitBoxs()
         {
-            ComboBox interfacesBox = new ComboBox();
+            _interfacesBox = new ComboBox();
             foreach (NetworkInterface iface in _networkInterface)
             {
-                interfacesBox.Items.Add(iface.Name);
+                _interfacesBox.Items.Add(iface.Name);
             }
-            interfacesBox.SelectedValueChanged += (s, e) =>
+            _interfacesBox.SelectedValueChanged += (s, e) =>
             {
                 //Console.WriteLine("Sélectionné: "+interfacesBox.Text);
                 ResetLabels();
-                PopulateLabels(IONetwork.GetInterfaceByName(interfacesBox.Text));
+                PopulateLabels(IONetwork.GetInterfaceByName(_interfacesBox.Text));
             };
             
-            TextBox AliasBox = new TextBox();
-            CheckBox chkDHCP = new CheckBox();
-            TextBox mtbIp = new TextBox();
-            TextBox mtbSubnet = new TextBox();
-            TextBox mtbGateway = new TextBox();
-            CheckBox chkDNS = new CheckBox();
-            TextBox mtbDNS1 = new TextBox();
-            TextBox mtbDNS2 = new TextBox();
-            _TextBoxs = new TextBox[] { mtbIp, mtbSubnet, mtbGateway, mtbDNS1, mtbDNS2 };
+            _aliasBox = new TextBox();
+            _chkDHCP = new CheckBox();
+            _mtbIp = new TextBox();
+            _mtbSubnet = new TextBox();
+            _mtbGateway = new TextBox();
+            _chkDNS = new CheckBox();
+            _mtbDNS1 = new TextBox();
+            _mtbDNS2 = new TextBox();
+            _TextBoxs = new TextBox[] { _mtbIp, _mtbSubnet, _mtbGateway, _mtbDNS1, _mtbDNS2 };
             foreach (var textBox in _TextBoxs)
             {
-                Regex iPv4Regex = new Regex("^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
-                //Regex ipv6Regex = new Regex("^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$");
+                textBox.BackColor = Constantes.VALIDATION_DEFAULT;
 
                 ToolTip toolTip = new ToolTip();
 
@@ -167,91 +176,202 @@ namespace NetSetDom.Controls
                 };*/
                 textBox.GotFocus += (s, e) =>
                 {
-                    if (textBox.Equals(mtbSubnet) && mtbIp.Text.Length >= 7)
+                    if (textBox.Equals(_mtbSubnet) && _mtbIp.Text.Length >= 7)
                     {
                         textBox.Text = "255.255.255.0";
                     }
                 };
                 textBox.LostFocus += (s, e) =>
                 {
-                    if ( !textBox.Equals(mtbSubnet) && iPv4Regex.IsMatch(textBox.Text))
-                    {
-                        textBox.BackColor = Color.Green;
-                    } else if ( Subnets.GetSubnets().Contains(textBox.Text) )
-                    {
-                        textBox.BackColor = Color.Green;
-                    }
-                    else
-                    {
-                        textBox.BackColor = Color.Red;
-                    }
+                    if (textBox.Text.Length == 0) return;
+                    ValidateTestBox(textBox);
                 };
 
             }
 
-            chkDHCP.CheckedChanged += (s, e) =>
+            _chkDHCP.CheckedChanged += (s, e) =>
             {
-                mtbIp.BackColor = Color.White;
-                mtbSubnet.BackColor = Color.White;
-                mtbGateway.BackColor = Color.White;
-                if (chkDHCP.Checked)
+                _mtbIp.BackColor = Constantes.VALIDATION_DEFAULT;
+                _mtbSubnet.BackColor = Constantes.VALIDATION_DEFAULT;
+                _mtbGateway.BackColor = Constantes.VALIDATION_DEFAULT;
+                if (_chkDHCP.Checked)
                 {
-                    mtbIp.Text = "";
-                    mtbSubnet.Text = "";
-                    mtbGateway.Text = "";
-                    mtbIp.Enabled = false;
-                    mtbSubnet.Enabled = false;
-                    mtbGateway.Enabled = false;
+                    _mtbIp.Text = "";
+                    _mtbSubnet.Text = "";
+                    _mtbGateway.Text = "";
+                    _mtbIp.Enabled = false;
+                    _mtbSubnet.Enabled = false;
+                    _mtbGateway.Enabled = false;
                 } else
                 {
-                    mtbIp.Enabled = true;
-                    mtbSubnet.Enabled = true;
-                    mtbGateway.Enabled = true;
+                    _mtbIp.Enabled = true;
+                    _mtbSubnet.Enabled = true;
+                    _mtbGateway.Enabled = true;
                 }
             };
-            chkDNS.CheckedChanged += (s, e) =>
+            _chkDNS.CheckedChanged += (s, e) =>
             {
-                mtbDNS1.BackColor = Color.White;
-                mtbDNS2.BackColor = Color.White;
-                if ( chkDNS.Checked)
+                _mtbDNS1.BackColor = Constantes.VALIDATION_DEFAULT;
+                _mtbDNS2.BackColor = Constantes.VALIDATION_DEFAULT;
+                if ( _chkDNS.Checked)
                 {
-                    mtbDNS1.Text = "";
-                    mtbDNS2.Text = "";
-                    mtbDNS1.Enabled = false;
-                    mtbDNS2.Enabled = false;
+                    _mtbDNS1.Text = "";
+                    _mtbDNS2.Text = "";
+                    _mtbDNS1.Enabled = false;
+                    _mtbDNS2.Enabled = false;
                 } else
                 {
-                    mtbDNS1.Enabled = true;
-                    mtbDNS2.Enabled = true;
+                    _mtbDNS1.Enabled = true;
+                    _mtbDNS2.Enabled = true;
                 }
                 
             };
 
             int y = _topAnchor;
-            interfacesBox.Location = new Point(130, y);
+            _interfacesBox.Location = new Point(130, y);
             y += 30;
-            chkDHCP.Location = new Point(130, y);
-            interfacesBox.Size = new Size(120, 30);
-            AliasBox.Size = new Size(120, 30);
+            _chkDHCP.Location = new Point(130, y);
+            _interfacesBox.Size = new Size(120, 30);
+            _aliasBox.Size = new Size(120, 30);
             for (int i = 0; i < _TextBoxs.Length; i++)
             {
                 y += 30;
                 _TextBoxs[i].Location = new Point(130, y);
             }
             
-            chkDNS.Location = new Point(130, y + 30);
-            AliasBox.Location = new Point(130, y + 60);
+            _chkDNS.Location = new Point(130, y + 30);
+            _aliasBox.Location = new Point(130, y + 60);
 
-            Controls.Add(interfacesBox);
-            Controls.Add(chkDHCP);
+            Controls.Add(_interfacesBox);
+            Controls.Add(_chkDHCP);
             Controls.AddRange(_TextBoxs);
-            Controls.Add(chkDNS);
-            Controls.Add(AliasBox);
+            Controls.Add(_chkDNS);
+            Controls.Add(_aliasBox);
         }
+
         /// <summary>
         /// Mets à jour les informations relatives à l'interface réseau sélectionnée
         /// </summary>
         /// <param name="networkInterface"> l'interface réseau sélectionnée</param>
+
+        private void InitValiderButton()
+        {
+            Button btnValider = new Button
+            {
+                Text = "Valider",
+                Location = new Point(200, 320)
+            };
+            btnValider.Click += (s, e) =>
+            {
+                if (InputValidation())
+                {
+                    SaveConfigurations();
+                    if ( !_chkDHCP.Checked ) // IP static
+                    {
+                        IONetwork.SetStaticIP(_interfacesBox.Text, _TextBoxs[0].Text, _TextBoxs[1].Text, _TextBoxs[2].Text);
+                    }
+                    else // IP auto
+                    {
+                        IONetwork.SetDynamicIP(_interfacesBox.Text);
+                    }
+                    if ( !_chkDNS.Checked ) // DNS static
+                    {
+                        if (_TextBoxs[4].Text.Length > 6) // IF a second server is defined
+                        {
+                            IONetwork.SetStaticDNS(_interfacesBox.Text, _TextBoxs[3].Text + ';' + _TextBoxs[4].Text);
+                        } else // Only primary server
+                        {
+                            IONetwork.SetStaticDNS(_interfacesBox.Text, _TextBoxs[3].Text);
+                        }
+                        
+                    }
+                    else // Dns auto
+                    {
+                        IONetwork.SetDynamicDNS(_interfacesBox.Text);
+                    }
+                } else
+                {
+                    MessageBox.Show("Veuillez corriger les erreurs avant de valider.\n\nN'oubliez pas de choisir une interface (carte réseau)");
+                }
+                
+            };
+
+            Controls.Add(btnValider);
+
+        }
+
+        /// <summary>
+        /// Validation of all user inputs
+        /// </summary>
+        /// <returns></returns>
+        private bool InputValidation()
+        {
+            if (_interfacesBox.Text.Length < 2) // No interface selected
+            {
+                return false;
+            }
+            if (_chkDHCP.Checked && _chkDNS.Checked) // IP and DNS auto
+            {
+                return true;
+            } else if (_chkDHCP.Checked && !_chkDNS.Checked) // IP auto and DNS static
+            {
+                if (ValidateTestBox(_mtbDNS1) && ValidateTestBox(_mtbDNS2)) return true;
+                else return false;
+
+            } else if (!_chkDHCP.Checked) // IP static
+            {
+                if (ValidateTestBox(_mtbIp)
+                    && ValidateTestBox(_mtbSubnet)
+                    && ValidateTestBox(_mtbGateway)
+                    && ValidateTestBox(_mtbDNS1)
+                    && ValidateTestBox(_mtbDNS2))
+                {
+                    return true;
+                } else
+                {
+                    return false;
+                }
+            } else
+            {
+                return false;
+            }
+        }
+        /// <summary>
+        /// Change BackColor depending on user Entry
+        /// </summary>
+        /// <param name="textBox"></param>
+        private bool ValidateTestBox(TextBox textBox)
+        {
+            if (!textBox.Equals(_mtbSubnet) && Constantes.IPV4REGEX.IsMatch(textBox.Text))
+            {
+                textBox.BackColor = Constantes.VALIDATION_PASS;
+                return true;
+            }
+            else if (Subnets.GetSubnets().Contains(textBox.Text))
+            {
+                textBox.BackColor = Constantes.VALIDATION_PASS;
+                return true;
+            } 
+            else if (textBox.Equals(_mtbGateway) || textBox.Equals(_mtbDNS1) || textBox.Equals(_mtbDNS2)) // GW and DNSs can be left blank in static
+            {
+                if (textBox.Text.Length == 0)
+                {
+                    textBox.BackColor = Constantes.VALIDATION_PASS;
+                    return true;
+                }
+                else
+                {
+                    textBox.BackColor = Constantes.VALIDATION_FAILED;
+                    return false;
+                }
+            }
+            else
+            {
+                textBox.BackColor = Constantes.VALIDATION_FAILED;
+                return false;
+            }
+        }
+
         private void PopulateLabels(NetworkInterface networkInterface)
         {
             if (networkInterface != null)
